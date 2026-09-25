@@ -1,4 +1,4 @@
-\# Library Management System
+# Library Management System
 
 
 
@@ -6,7 +6,7 @@ A MongoDB-based Library Management System developed as part of the Database Syst
 
 
 
-\## Project Overview
+## Project Overview
 
 
 
@@ -18,29 +18,29 @@ The project demonstrates CRUD operations, aggregation pipelines, indexing, docum
 
 
 
-\## Technologies Used
+## Technologies Used
 
 
 
-\- MongoDB Atlas
+- MongoDB Atlas
 
-\- MongoDB
+- MongoDB
 
-\- MongoDB Shell (mongosh)
+- MongoDB Shell (mongosh)
 
-\- Node.js
+- Node.js
 
-\- JavaScript
+- JavaScript
 
-\- MongoDB Node.js Driver
+- MongoDB Node.js Driver
 
-\- dotenv
+- dotenv
 
-\- Git \& GitHub
+- Git \& GitHub
 
 
 
-\## Database
+## Database
 
 
 
@@ -52,7 +52,7 @@ Database name:
 
 
 
-\### Collections
+### Collections
 
 
 
@@ -72,7 +72,7 @@ Database name:
 
 
 
-\## Dataset
+## Dataset
 
 
 
@@ -80,15 +80,15 @@ The database contains:
 
 
 
-\- 100 Books
+- 100 Books
 
-\- 35 Members
+- 35 Members
 
-\- 5 Staff
+- 5 Staff
 
-\- 55 Transactions
+- 55 Transactions
 
-\- 25 Reservations
+- 25 Reservations
 
 
 
@@ -96,11 +96,11 @@ The database contains:
 
 
 
-\## Features
+## Features
 
 
 
-\### 1. CRUD Operations
+### 1. CRUD Operations
 
 
 
@@ -108,21 +108,21 @@ The project demonstrates:
 
 
 
-\- Creating books
+- Creating books
 
-\- Searching books
+- Searching books
 
-\- Finding available copies
+- Finding available copies
 
-\- Updating book copy status
+- Updating book copy status
 
-\- Updating transaction status
+- Updating transaction status
 
-\- Deleting members/reservations
+- Deleting members/reservations
 
 
 
-\### 2. Aggregation Queries
+### 2. Aggregation Queries
 
 
 
@@ -130,19 +130,19 @@ The following aggregation operations are implemented:
 
 
 
-1\. Most borrowed books
+1. Most borrowed books
 
-2\. Currently overdue members
+2. Currently overdue members
 
-3\. Books grouped by genre
+3. Books grouped by genre
 
-4\. Transaction status summary
+4. Transaction status summary
 
-5\. Fine summary by member
+5. Fine summary by member
 
 
 
-\### 3. Indexing
+### 3. Indexing
 
 
 
@@ -150,19 +150,19 @@ Indexes are created for:
 
 
 
-\- Book title
+- Book title
 
-\- Author name
+- Author name
 
-\- Genre
+- Genre
 
-\- Member ID and issue date
+- Member ID and issue date
 
-\- Book ID and reservation status
+- Book ID and reservation status
 
 
 
-\### 4. Document Validation
+### 4. Document Validation
 
 
 
@@ -178,13 +178,13 @@ Allowed transaction statuses:
 
 
 
-\- `Issued`
+- `Issued`
 
-\- `Returned`
+- `Returned`
 
 
 
-\### 5. ACID Transaction
+### 5. ACID Transaction
 
 
 
@@ -196,17 +196,17 @@ The transaction:
 
 
 
-1\. Changes a book copy from `Available` to `Issued`
+1. Changes a book copy from `Available` to `Issued`
 
-2\. Decreases the available copy count
+2. Decreases the available copy count
 
-3\. Creates a corresponding transaction record
+3. Creates a corresponding transaction record
 
-4\. Commits both operations together
+4. Commits both operations together
 
 
 
-\### 6. Node.js Integration
+### 6. Node.js Integration
 
 
 
@@ -218,7 +218,7 @@ The application demonstrates retrieving available books from the database.
 
 
 
-\## Project Structure
+## Project Structure
 
 
 
