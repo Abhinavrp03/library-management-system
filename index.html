@@ -1,0 +1,915 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            color: #202b3c;
+        }
+        header {
+            background: #172554;
+            color: white;
+            padding: 22px 30px;
+        }
+        header h1 { margin: 0 0 7px; font-size: 25px; }
+        header p { margin: 0; color: #c7d2fe; }
+        main { max-width: 1100px; margin: 28px auto; padding: 0 20px; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+        .card, .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #17255410;
+        }
+        .card span { color: #64748b; font-size: 14px; }
+        .card h2 { font-size: 30px; margin: 12px 0 0; }
+        .panel { margin-top: 22px; }
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 18px 0;
+        }
+        input, select, button {
+            padding: 11px 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 14px;
+        }
+        input { flex: 1; min-width: 180px; }
+        button { cursor: pointer; background: #1d4ed8; color: white; border: none; }
+        button:hover { background: #1e40af; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 650px; }
+        th, td { text-align: left; padding: 13px 10px; border-bottom: 1px solid #e2e8f0; }
+        th { color: #64748b; font-size: 12px; text-transform: uppercase; }
+        .status { color: #166534; background: #dcfce7; padding: 5px 8px; border-radius: 20px; font-size: 12px; }
+        .muted { color: #64748b; }
+        #message { margin-top: 12px; color: #b91c1c; }
+        @media (max-width: 600px) {
+            header { padding: 20px; }
+            main { padding: 0 12px; }
+            .panel, .card { padding: 15px; }
+        }
+#loginPanel {
+    max-width: 420px;
+    margin: 50px auto;
+    background: white;
+    padding: 28px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px #17255420;
+}
+
+#loginPanel input {
+    width: 100%;
+    margin: 8px 0 14px;
+}
+
+#loginPanel button {
+    width: 100%;
+}
+
+#loginMessage {
+    color: #b91c1c;
+}
+
+#logoutButton {
+    float: right;
+    background: #dc2626;
+}
+
+#appMain {
+    display: none;
+}
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Library Management System</h1>
+        <p>MongoDB-powered library dashboard</p>
+<button id="logoutButton" hidden>Logout</button>
+    </header>
+<section id="loginPanel">
+    <h2>Staff Login</h2>
+    <p class="muted">Sign in to manage the library.</p>
+
+    <form id="loginForm">
+        <label for="loginUsername">Username</label>
+        <input id="loginUsername" name="username"
+               placeholder="Enter username" required>
+
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" name="password"
+               type="password" placeholder="Enter password" required>
+
+        <button type="submit">Login</button>
+    </form>
+
+    <p id="loginMessage" role="status"></p>
+</section>
+
+    <<main id="appMain">>
+        <section class="stats">
+            <div class="card">
+                <span>Total Books</span>
+                <h2 id="bookCount">—</h2>
+            </div>
+            <div class="card">
+                <span>Total Members</span>
+                <h2 id="memberCount">—</h2>
+            </div>
+            <div class="card">
+                <span>Available Copies</span>
+                <h2 id="availableCount">—</h2>
+            </div>
+        </section>
+
+
+
+<section class="panel" id="analyticsPanel">
+    <h2>Library Analytics</h2>
+    <p class="muted">Live reports generated using MongoDB aggregation pipelines.</p>
+
+    <button id="refreshAnalytics" type="button">Refresh Analytics</button>
+    <p id="analyticsMessage" role="status"></p>
+
+    <h3>Most Borrowed Books</h3>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Book ID</th><th>Title</th><th>Borrow Count</th></tr>
+            </thead>
+            <tbody id="mostBorrowedRows">
+                <tr><td colspan="3">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Overdue Loans</h3>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Member</th><th>Book</th><th>Due Date</th></tr>
+            </thead>
+            <tbody id="overdueRows">
+                <tr><td colspan="3">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Books by Genre</h3>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Genre</th><th>Book Titles/Records</th><th>Total Copies</th><th>Available</th></tr>
+            </thead>
+            <tbody id="genreRows">
+                <tr><td colspan="4">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Transaction Status Summary</h3>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Status</th><th>Count</th></tr>
+            </thead>
+            <tbody id="statusRows">
+                <tr><td colspan="2">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Fine Summary by Member</h3>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Member</th><th>Total Fine</th><th>Unpaid Fine</th><th>Transactions</th></tr>
+            </thead>
+            <tbody id="fineRows">
+                <tr><td colspan="4">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="muted" id="analyticsUpdated"></p>
+</section>
+
+<section class="panel">
+    <h2>Issue or Return a Book</h2>
+    <p class="muted">Manage book loans and track their status.</p>
+
+    <form id="issueForm">
+        <div class="toolbar">
+            <input name="memberId" placeholder="Member ID (e.g. MEM2001)" required>
+            <input name="bookId" placeholder="Book ID (e.g. BK1002)" required>
+            <button type="submit">Issue Book</button>
+        </div>
+    </form>
+
+    <p id="loanMessage" role="status"></p>
+
+    <h3>Recent Transactions</h3>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Member</th>
+                    <th>Book</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="transactionRows">
+                <tr><td colspan="6">Loading transactions...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel">
+    <h2>Member Management</h2>
+    <p class="muted">Register new members and view existing library members.</p>
+
+    <form id="memberForm">
+        <div class="toolbar">
+            <input name="memberId" placeholder="Member ID (e.g. MEM3001)" required>
+            <input name="name" placeholder="Full name" required>
+            <input name="email" type="email" placeholder="Email address" required>
+        </div>
+        <div class="toolbar">
+            <input name="phone" placeholder="Phone number">
+            <select name="membershipType">
+                <option value="Standard">Standard</option>
+                <option value="Student">Student</option>
+                <option value="Premium">Premium</option>
+            </select>
+            <button type="submit">Register Member</button>
+        </div>
+    </form>
+
+    <p id="memberMessage" role="status"></p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Member ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Membership</th>
+                </tr>
+            </thead>
+            <tbody id="memberRows">
+                <tr><td colspan="4">Loading members...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel">
+    <h2>Book Reservations</h2>
+    <p class="muted">Reserve a book and view existing reservations.</p>
+
+    <form id="reservationForm">
+        <div class="toolbar">
+            <input name="memberId" placeholder="Member ID (e.g. MEM2001)" required>
+            <input name="bookId" placeholder="Book ID (e.g. BK1002)" required>
+            <button type="submit">Reserve Book</button>
+        </div>
+    </form>
+
+    <p id="reservationMessage" role="status"></p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Reservation ID</th>
+                    <th>Member ID</th>
+                    <th>Book ID</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="reservationRows">
+                <tr><td colspan="5">Loading reservations...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+
+        <section class="panel">
+            <h2>Book Catalogue</h2>
+	    
+<section class="panel">
+    <h2>Add a New Book</h2>
+    <form id="addBookForm">
+        <div class="toolbar">
+            <input name="bookId" placeholder="Book ID (e.g. BK2001)" required>
+            <input name="title" placeholder="Book title" required>
+            <input name="genre" placeholder="Genre" required>
+        </div>
+        <div class="toolbar">
+            <input name="publisher" placeholder="Publisher">
+            <input name="publishedYear" type="number" placeholder="Published year">
+            <input name="totalCopies" type="number" min="1" value="1" placeholder="Number of copies">
+        </div>
+        <button type="submit">Add Book</button>
+        <p id="addBookMessage" role="status"></p>
+    </form>
+</section>
+
+            <p class="muted">Search and browse books stored in MongoDB Atlas.</p>
+            <div class="toolbar">
+                <input id="search" placeholder="Search by title, book ID or genre...">
+                <button id="refresh">Refresh Data</button>
+            </div>
+            <div id="message"></div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Book ID</th>
+                            <th>Title</th>
+                            <th>Genre</th>
+                            <th>Copies</th>
+                            <th>Available</th>
+			    <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookRows">
+                        <tr><td colspan="6">Loading books...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let allBooks = [];
+
+        function getAvailable(book) {
+            if (typeof book.availableCopies === "number") {
+                return book.availableCopies;
+            }
+            if (Array.isArray(book.copies)) {
+                return book.copies.filter(copy => copy.status === "Available").length;
+            }
+            return 0;
+        }
+
+        function renderBooks() {
+            const query = document.getElementById("search").value.toLowerCase().trim();
+            const filtered = allBooks.filter(book =>
+                [book.bookId, book.title, book.genre]
+                    .some(value => String(value || "").toLowerCase().includes(query))
+            );
+
+            const rows = document.getElementById("bookRows");
+
+            if (!filtered.length) {
+                rows.innerHTML = '<tr><td colspan="6">No matching books found.</td></tr>';
+                return;
+            }
+
+            rows.innerHTML = filtered.map(book => `
+                <tr>
+                    <td>${escapeHtml(book.bookId)}</td>
+                    <td>${escapeHtml(book.title)}</td>
+                    <td>${escapeHtml(book.genre)}</td>
+                    <td>${Number(book.totalCopies ?? (book.copies || []).length)}</td>
+                    <td>${getAvailable(book)}</td>
+                    <td>
+                   <button onclick="editBook('${escapeHtml(book.bookId)}')">Edit</button>
+                   <button onclick="deleteBook('${escapeHtml(book.bookId)}')"
+                   style="background:#dc2626">Delete</button>
+                   </td>
+                </tr>
+            `).join("");
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? "").replace(/[&<>"']/g, char => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;",
+                '"': "&quot;", "'": "&#39;"
+            }[char]));
+        }
+
+        async function loadData() {
+            const message = document.getElementById("message");
+            message.textContent = "";
+
+            try {
+                const [booksResponse, membersResponse] = await Promise.all([
+                    fetch("/api/books"),
+                    fetch("/api/members")
+                ]);
+
+                if (!booksResponse.ok || !membersResponse.ok) {
+                    throw new Error("The API could not retrieve the database records.");
+                }
+
+                allBooks = await booksResponse.json();
+                const members = await membersResponse.json();
+
+                document.getElementById("bookCount").textContent = allBooks.length;
+                document.getElementById("memberCount").textContent = members.length;
+                document.getElementById("availableCount").textContent =
+                    allBooks.reduce((total, book) => total + getAvailable(book), 0);
+
+                renderBooks();
+            } catch (error) {
+                message.textContent = error.message;
+            }
+        }
+
+        document.getElementById("search").addEventListener("input", renderBooks);
+        document.getElementById("refresh").addEventListener("click", loadData);
+
+        loadData();
+        
+document.getElementById("addBookForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const message = document.getElementById("addBookMessage");
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    data.publishedYear = Number(data.publishedYear) || new Date().getFullYear();
+    data.totalCopies = Number(data.totalCopies) || 1;
+
+    try {
+        const response = await fetch("/api/books", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Could not add book.");
+        }
+
+        message.style.color = "green";
+        message.textContent = result.message;
+        form.reset();
+
+        await loadData();
+    } catch (error) {
+        message.style.color = "crimson";
+        message.textContent = error.message;
+    }
+});
+
+async function editBook(bookId) {
+    const book = allBooks.find(item => item.bookId === bookId);
+    if (!book) return;
+
+    const title = prompt("Book title:", book.title || "");
+    if (title === null) return;
+
+    const genre = prompt("Genre:", book.genre || "");
+    if (genre === null) return;
+
+    if (!title.trim() || !genre.trim()) {
+        alert("Title and genre cannot be empty.");
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `/api/books/${encodeURIComponent(bookId)}`,
+            {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: title.trim(),
+                    genre: genre.trim()
+                })
+            }
+        );
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Update failed.");
+
+        alert(result.message);
+        await loadData();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function deleteBook(bookId) {
+    const book = allBooks.find(item => item.bookId === bookId);
+    if (!book) return;
+
+    if (!confirm(`Delete "${book.title}" (${bookId})? This cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `/api/books/${encodeURIComponent(bookId)}`,
+            { method: "DELETE" }
+        );
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Delete failed.");
+
+        alert(result.message);
+        await loadData();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function loadTransactions() {
+    const rows = document.getElementById("transactionRows");
+
+    try {
+        const response = await fetch("/api/transactions");
+        if (!response.ok) throw new Error("Could not load transactions.");
+
+        const transactions = await response.json();
+
+        if (!transactions.length) {
+            rows.innerHTML = '<tr><td colspan="6">No transactions found.</td></tr>';
+            return;
+        }
+
+        rows.innerHTML = transactions.map(tx => `
+            <tr>
+                <td>${escapeHtml(tx.transactionId)}</td>
+                <td>${escapeHtml(tx.memberId)}</td>
+                <td>${escapeHtml(tx.bookId)}</td>
+                <td>${tx.dueDate ? escapeHtml(new Date(tx.dueDate).toLocaleDateString()) : "—"}</td>
+                <td>${escapeHtml(tx.status)}</td>
+                <td>${tx.status === "Issued"
+                    ? `<button onclick="returnBook('${encodeURIComponent(tx.transactionId)}')">Return</button>`
+                    : "—"}
+                </td>
+            </tr>
+        `).join("");
+    } catch (error) {
+        rows.innerHTML = `<tr><td colspan="6">${escapeHtml(error.message)}</td></tr>`;
+    }
+}
+
+document.getElementById("issueForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const message = document.getElementById("loanMessage");
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    try {
+        const response = await fetch("/api/transactions/issue", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Could not issue book.");
+
+        message.style.color = "green";
+        message.textContent = result.message;
+        form.reset();
+
+        await Promise.all([loadData(), loadTransactions()]);
+    } catch (error) {
+        message.style.color = "crimson";
+        message.textContent = error.message;
+    }
+});
+
+async function returnBook(encodedTransactionId) {
+    const transactionId = decodeURIComponent(encodedTransactionId);
+
+    if (!confirm(`Return transaction ${transactionId}?`)) return;
+
+    const message = document.getElementById("loanMessage");
+
+    try {
+        const response = await fetch(
+            `/api/transactions/${encodeURIComponent(transactionId)}/return`,
+            { method: "POST" }
+        );
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Could not return book.");
+
+        message.style.color = "green";
+        message.textContent = result.message;
+
+        await Promise.all([loadData(), loadTransactions()]);
+    } catch (error) {
+        message.style.color = "crimson";
+        message.textContent = error.message;
+    }
+}
+
+loadTransactions();
+
+async function loadReservations() {
+    const rows = document.getElementById("reservationRows");
+
+    try {
+        const response = await fetch("/api/reservations");
+        if (!response.ok) throw new Error("Could not load reservations.");
+
+        const reservations = await response.json();
+
+        if (!reservations.length) {
+            rows.innerHTML = '<tr><td colspan="5">No reservations found.</td></tr>';
+            return;
+        }
+
+        rows.innerHTML = reservations.map(r => `
+            <tr>
+                <td>${escapeHtml(r.reservationId)}</td>
+                <td>${escapeHtml(r.memberId)}</td>
+                <td>${escapeHtml(r.bookId)}</td>
+                <td>${r.reservationDate ? escapeHtml(new Date(r.reservationDate).toLocaleDateString()) : "—"}</td>
+                <td>${escapeHtml(r.status)}</td>
+            </tr>
+        `).join("");
+    } catch (error) {
+        rows.innerHTML = `<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`;
+    }
+}
+
+document.getElementById("reservationForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const message = document.getElementById("reservationMessage");
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    try {
+        const response = await fetch("/api/reservations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Could not reserve book.");
+
+        message.style.color = "green";
+        message.textContent = result.message;
+        form.reset();
+
+        await loadReservations();
+    } catch (error) {
+        message.style.color = "crimson";
+        message.textContent = error.message;
+    }
+});
+
+loadReservations();
+
+async function loadMembers() {
+    const rows = document.getElementById("memberRows");
+
+    try {
+        const response = await fetch("/api/members");
+        if (!response.ok) throw new Error("Could not load members.");
+
+        const members = await response.json();
+
+        if (!members.length) {
+            rows.innerHTML = '<tr><td colspan="4">No members found.</td></tr>';
+            return;
+        }
+
+        rows.innerHTML = members.map(member => `
+            <tr>
+                <td>${escapeHtml(member.memberId)}</td>
+                <td>${escapeHtml(member.name)}</td>
+                <td>${escapeHtml(member.email)}</td>
+                <td>${escapeHtml(member.membershipType)}</td>
+            </tr>
+        `).join("");
+    } catch (error) {
+        rows.innerHTML = `<tr><td colspan="4">${escapeHtml(error.message)}</td></tr>`;
+    }
+}
+
+document.getElementById("memberForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const message = document.getElementById("memberMessage");
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    try {
+        const response = await fetch("/api/members", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Registration failed.");
+
+        message.style.color = "green";
+        message.textContent = result.message;
+        form.reset();
+
+        await Promise.all([loadMembers(), loadData()]);
+    } catch (error) {
+        message.style.color = "crimson";
+        message.textContent = error.message;
+    }
+});
+
+loadMembers();
+const loginPanel = document.getElementById("loginPanel");
+const appMain = document.getElementById("appMain");
+const logoutButton = document.getElementById("logoutButton");
+
+function showDashboard(staff) {
+    loginPanel.style.display = "none";
+    appMain.style.display = "block";
+    logoutButton.hidden = false;
+
+    document.querySelector("header p").textContent =
+        `Logged in as ${staff.username} (${staff.role})`;
+
+    loadData();
+    loadTransactions();
+    loadReservations();
+    loadMembers();
+loadAnalytics();
+}
+
+function showLogin() {
+    loginPanel.style.display = "block";
+    appMain.style.display = "none";
+    logoutButton.hidden = true;
+}
+
+
+document.getElementById("loginForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const message = document.getElementById("loginMessage");
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    try {
+        const response = await fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Login failed.");
+        }
+
+        message.textContent = "";
+        form.reset();
+        showDashboard(result.staff);
+
+    } catch (error) {
+        message.textContent = error.message;
+    }
+});
+
+logoutButton.addEventListener("click", async () => {
+    try {
+        const response = await fetch("/api/logout", {
+            method: "POST"
+        });
+
+        if (!response.ok) {
+            throw new Error("Logout failed.");
+        }
+
+        showLogin();
+        document.querySelector("header p").textContent =
+            "MongoDB-powered library dashboard";
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
+async function checkLogin() {
+    try {
+        const response = await fetch("/api/me");
+
+        if (response.ok) {
+            const result = await response.json();
+            showDashboard(result.staff);
+        } else {
+            showLogin();
+        }
+    } catch {
+        showLogin();
+        document.getElementById("loginMessage").textContent =
+            "Cannot connect to the server. Please check that it is running.";
+    }
+}
+
+checkLogin();
+
+async function loadAnalytics() {
+    const message = document.getElementById("analyticsMessage");
+    message.textContent = "Loading analytics...";
+
+    try {
+        const response = await fetch("/api/analytics");
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Could not load analytics.");
+        }
+
+        const safe = value => escapeHtml(value ?? "—");
+        const date = value =>
+            value ? safe(new Date(value).toLocaleDateString()) : "—";
+
+        document.getElementById("mostBorrowedRows").innerHTML =
+            data.mostBorrowed.length
+                ? data.mostBorrowed.map(item => `
+                    <tr>
+                        <td>${safe(item.bookId)}</td>
+                        <td>${safe(item.title)}</td>
+                        <td>${Number(item.borrowCount)}</td>
+                    </tr>`).join("")
+                : '<tr><td colspan="3">No borrowing data yet.</td></tr>';
+
+        document.getElementById("overdueRows").innerHTML =
+            data.overdueLoans.length
+                ? data.overdueLoans.map(item => `
+                    <tr>
+                        <td>${safe(item.memberName)} (${safe(item.memberId)})</td>
+                        <td>${safe(item.bookTitle)}</td>
+                        <td>${date(item.dueDate)}</td>
+                    </tr>`).join("")
+                : '<tr><td colspan="3">No overdue loans.</td></tr>';
+
+        document.getElementById("genreRows").innerHTML =
+            data.booksByGenre.map(item => `
+                <tr>
+                    <td>${safe(item.genre)}</td>
+                    <td>${Number(item.bookCount)}</td>
+                    <td>${Number(item.totalCopies)}</td>
+                    <td>${Number(item.availableCopies)}</td>
+                </tr>`).join("") ||
+            '<tr><td colspan="4">No book data.</td></tr>';
+
+        document.getElementById("statusRows").innerHTML =
+            data.transactionSummary.map(item => `
+                <tr>
+                    <td>${safe(item.status)}</td>
+                    <td>${Number(item.count)}</td>
+                </tr>`).join("") ||
+            '<tr><td colspan="2">No transactions.</td></tr>';
+
+        document.getElementById("fineRows").innerHTML =
+            data.fineSummary.map(item => `
+                <tr>
+                    <td>${safe(item.memberName)} (${safe(item.memberId)})</td>
+                    <td>${Number(item.totalFine).toFixed(2)}</td>
+                    <td>${Number(item.unpaidFine).toFixed(2)}</td>
+                    <td>${Number(item.transactionCount)}</td>
+                </tr>`).join("") ||
+            '<tr><td colspan="4">No fine records.</td></tr>';
+
+        document.getElementById("analyticsUpdated").textContent =
+            "Last updated: " + new Date(data.generatedAt).toLocaleString();
+
+        message.textContent = "";
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+document.getElementById("refreshAnalytics")
+    .addEventListener("click", loadAnalytics);
+
+
+    </script>
+</body>
+</html>
