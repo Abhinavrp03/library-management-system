@@ -1,242 +1,84 @@
 # Library Management System
 
-
-
-A MongoDB-based Library Management System developed as part of the Database Systems Lab Review 2.
-
-
-
-## Project Overview
-
-
-
-The system manages books, library members, staff, book transactions, and reservations using MongoDB as the NoSQL database.
-
-
-
-The project demonstrates CRUD operations, aggregation pipelines, indexing, document validation, ACID transactions, and Node.js integration with MongoDB Atlas.
-
-
-
-## Technologies Used
-
-
-
-- MongoDB Atlas
-
-- MongoDB
-
-- MongoDB Shell (mongosh)
-
-- Node.js
-
-- JavaScript
-
-- MongoDB Node.js Driver
-
-- dotenv
-
-- Git \& GitHub
-
-
-
-## Database
-
-
-
-Database name:
-
-
-
-`library\_management`
-
-
-
-### Collections
-
-
-
-| Collection | Description |
-
-|---|---|
-
-| `books` | Stores book details, authors, copies and availability |
-
-| `members` | Stores library member information |
-
-| `staff` | Stores staff information |
-
-| `transactions` | Stores book issue and return transactions |
-
-| `reservations` | Stores book reservations |
-
-
-
-## Dataset
-
-
-
-The database contains:
-
-
-
-- 100 Books
-
-- 35 Members
-
-- 5 Staff
-
-- 55 Transactions
-
-- 25 Reservations
-
-
-
-\*\*Total Documents: 220\*\*
-
-
+A web-based Library Management System built using **Node.js, Express.js, MongoDB Atlas, HTML, CSS, and JavaScript**.
 
 ## Features
 
-
-
-### 1. CRUD Operations
-
-
-
-The project demonstrates:
-
-
-
-- Creating books
-
-- Searching books
-
-- Finding available copies
-
-- Updating book copy status
-
-- Updating transaction status
-
-- Deleting members/reservations
-
-
-
-### 2. Aggregation Queries
-
-
-
-The following aggregation operations are implemented:
-
-
-
-1. Most borrowed books
-
-2. Currently overdue members
-
-3. Books grouped by genre
-
-4. Transaction status summary
-
-5. Fine summary by member
-
-
-
-### 3. Indexing
-
-
-
-Indexes are created for:
-
-
-
-- Book title
-
-- Author name
-
-- Genre
-
-- Member ID and issue date
-
-- Book ID and reservation status
-
-
-
-### 4. Document Validation
-
-
-
-Transaction documents use MongoDB schema validation.
-
-
-
-Required fields and transaction status values are validated before insertion.
-
-
-
-Allowed transaction statuses:
-
-
-
-- `Issued`
-
-- `Returned`
-
-
-
-### 5. ACID Transaction
-
-
-
-A multi-document MongoDB transaction is implemented for the book issue workflow.
-
-
-
-The transaction:
-
-
-
-1. Changes a book copy from `Available` to `Issued`
-
-2. Decreases the available copy count
-
-3. Creates a corresponding transaction record
-
-4. Commits both operations together
-
-
-
-### 6. Node.js Integration
-
-
-
-The Node.js application connects to MongoDB Atlas using the MongoDB Node.js Driver.
-
-
-
-The application demonstrates retrieving available books from the database.
-
-
+- **Staff authentication:** Login and logout using bcrypt password hashing and server-side sessions stored in MongoDB.
+- **Book management:** Add, view, search, edit, and delete books.
+- **Member management:** Register and view library members.
+- **Issue and return:** Manage book loans with issue dates, due dates, copy availability, and transaction records.
+- **Reservations:** Create and view book reservations.
+- **Analytics dashboard:** Five MongoDB aggregation reports covering popular books, overdue loans, books by genre, transaction status, and fines.
+- **Database operations:** CRUD, aggregation pipelines, indexes, schema validation, and transaction testing.
+- **Responsive interface:** Web dashboard designed for desktop and mobile screens.
+
+## Technology Stack
+
+- Frontend: HTML, CSS, JavaScript
+- Backend: Node.js and Express.js
+- Database: MongoDB Atlas
+- Authentication: bcryptjs, express-session, connect-mongo
+- Version control: Git and GitHub
 
 ## Project Structure
 
-
-
 ```text
-
 library-demo/
-
-│
-
+├── public/
+│   └── index.html
 ├── server.js
-
+├── setup-admin.js
 ├── package.json
-
 ├── package-lock.json
-
-├── README.md
-
+├── .env.example
 ├── .gitignore
+└── README.md
+```
 
-└── .env
+## Setup Instructions
 
+1. Install Node.js.
+2. Clone this repository.
+3. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+4. Create a `.env` file in the project root:
+
+   ```env
+   MONGODB_URI=your_mongodb_connection_string
+   SESSION_SECRET=your_random_session_secret
+   PORT=3000
+   ```
+
+5. Configure the MongoDB Atlas database and ensure the required collections and sample data exist.
+6. If setting up the administrator account, use the provided `setup-admin.js` script and create a strong password privately.
+7. Start the application:
+
+   ```bash
+   node server.js
+   ```
+
+8. Open `http://localhost:3000` in your browser and log in using your configured staff account.
+
+## Analytics Reports
+
+1. Most borrowed books
+2. Currently overdue loans
+3. Books grouped by genre
+4. Transaction status summary
+5. Fine summary by member
+
+## Security Notes
+
+- Never commit `.env`, database credentials, or session secrets.
+- Passwords are stored as bcrypt hashes.
+- Write operations require an authenticated staff session.
+- For production deployment, use HTTPS, secure cookies, rate limiting, and appropriate database access controls.
+
+## Academic Purpose
+
+This project demonstrates document-oriented database design, CRUD operations, aggregation, indexing, validation, transaction handling, authentication, and a web-based interface for a Library Management System.
